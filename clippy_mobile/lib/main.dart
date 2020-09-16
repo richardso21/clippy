@@ -39,27 +39,42 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   bool switchBool = true;
   String _currentClip = "No clip yet!";
-  String ip = '192.168.1.51';
+  String ip = '127.0.1.1';
   int port = 8080;
-  StreamSubscription s;
+  Socket s;
 
   @override
   void initState() {
     super.initState();
     // setup listener
+    _setListener(ip, port);
+  }
+
+  void _setListener(ip, port) async {
     if (s != null) {
-      s.cancel();
+      await s.close();
     }
-    Socket.connect(ip, port).then((socket) => {
-          s = socket.listen((event) {
-            setState(() {
-              if (switchBool) {
-                _currentClip = utf8.decode(event);
-                print(_currentClip);
-              }
-            });
-          })
-        });
+
+    s = await Socket.connect(ip, port);
+    
+    s.listen((event) {
+      setState(() {
+        if (switchBool) {
+          _currentClip = utf8.decode(event);
+          print(_currentClip);
+        }
+      });
+    });
+    // Socket.connect(ip, port).then((socket) => {
+    //       s = socket.listen((event) {
+    //         setState(() {
+    //           if (switchBool) {
+    //             _currentClip = utf8.decode(event);
+    //             print(_currentClip);
+    //           }
+    //         });
+    //       })
+    //     });
   }
 
   void _updateCurrentClip() {
@@ -93,9 +108,9 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             OutlineButton(
               onPressed: () {
-                ip = '192.168.1.0';
+                ip = '127.0.1.1';
                 port = 8080;
-                initState();
+                _setListener(ip, port);
                 // setState(() {
                 //   _currentClip = 'lol';
                 // });
